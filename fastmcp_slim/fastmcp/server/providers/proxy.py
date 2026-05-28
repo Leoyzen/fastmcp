@@ -25,7 +25,7 @@ from mcp.shared.exceptions import McpError
 from mcp.types import (
     METHOD_NOT_FOUND,
     BlobResourceContents,
-    ElicitRequestFormParams,
+    ElicitRequestURLParams,
     TextResourceContents,
 )
 from pydantic.networks import AnyUrl
@@ -982,17 +982,19 @@ async def default_proxy_elicitation_handler(
 ) -> ElicitResult:
     """Forward elicitation request from remote server to proxy's connected clients."""
     ctx = get_context()
-    # requestedSchema only exists on ElicitRequestFormParams, not ElicitRequestURLParams
-    requested_schema = (
-        params.requestedSchema
-        if isinstance(params, ElicitRequestFormParams)
-        else {"type": "object", "properties": {}}
-    )
-    result = await ctx.session.elicit(
-        message=message,
-        requestedSchema=requested_schema,
-        related_request_id=ctx.request_id,
-    )
+    if isinstance(params, ElicitRequestURLParams):
+        result = await ctx.session.elicit_url(
+            message=message,
+            url=params.url,
+            elicitation_id=params.elicitationId,
+            related_request_id=ctx.request_id,
+        )
+    else:
+        result = await ctx.session.elicit(
+            message=message,
+            requestedSchema=params.requestedSchema,
+            related_request_id=ctx.request_id,
+        )
     return ElicitResult(action=result.action, content=result.content)
 
 

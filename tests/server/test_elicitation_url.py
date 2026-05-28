@@ -45,7 +45,9 @@ class TestUrlElicitationRequiredError:
         assert issubclass(UrlElicitationRequiredError, Exception)
 
     def test_can_be_raised_and_caught(self):
-        params = ElicitRequestURLParams(message="test", url="https://example.com", elicitationId="id-1")
+        params = ElicitRequestURLParams(
+            message="test", url="https://example.com", elicitationId="id-1"
+        )
         with pytest.raises(UrlElicitationRequiredError):
             raise UrlElicitationRequiredError([params])
 
@@ -93,7 +95,12 @@ class TestContextElicitUrl:
         )
         ctx._session = mock_session
 
-        with patch.object(type(ctx), "request_id", new_callable=PropertyMock, return_value="test-req-id"):
+        with patch.object(
+            type(ctx),
+            "request_id",
+            new_callable=PropertyMock,
+            return_value="test-req-id",
+        ):
             result = await ctx.elicit_url(
                 url="https://example.com/oauth",
                 message="Please authorize",
@@ -157,7 +164,12 @@ class TestContextElicitUrl:
         )
         ctx._session = mock_session
 
-        with patch.object(type(ctx), "request_id", new_callable=PropertyMock, return_value="test-req-id"):
+        with patch.object(
+            type(ctx),
+            "request_id",
+            new_callable=PropertyMock,
+            return_value="test-req-id",
+        ):
             await ctx.elicit_url(
                 url="https://example.com",
                 message="Test",
@@ -182,7 +194,12 @@ class TestContextElicitUrl:
         )
         ctx._session = mock_session
 
-        with patch.object(type(ctx), "request_id", new_callable=PropertyMock, return_value="test-req-id"):
+        with patch.object(
+            type(ctx),
+            "request_id",
+            new_callable=PropertyMock,
+            return_value="test-req-id",
+        ):
             await ctx.elicit_url(
                 url="https://example.com",
                 message="Test",
@@ -204,7 +221,9 @@ class TestContextElicitUrl:
         )
         ctx._session = mock_session
 
-        with patch.object(type(ctx), "request_id", new_callable=PropertyMock, return_value="req-123"):
+        with patch.object(
+            type(ctx), "request_id", new_callable=PropertyMock, return_value="req-123"
+        ):
             await ctx.elicit_url(
                 url="https://example.com/oauth",
                 message="Please authorize",
@@ -259,7 +278,12 @@ class TestContextElicitUrl:
         )
         ctx._session = mock_session
 
-        with patch.object(type(ctx), "request_id", new_callable=PropertyMock, return_value="test-req-id"):
+        with patch.object(
+            type(ctx),
+            "request_id",
+            new_callable=PropertyMock,
+            return_value="test-req-id",
+        ):
             with pytest.raises(UrlElicitationRequiredError):
                 await ctx.elicit_url(
                     url="https://example.com",
@@ -277,7 +301,12 @@ class TestContextElicitUrl:
         )
         ctx._session = mock_session
 
-        with patch.object(type(ctx), "request_id", new_callable=PropertyMock, return_value="test-req-id"):
+        with patch.object(
+            type(ctx),
+            "request_id",
+            new_callable=PropertyMock,
+            return_value="test-req-id",
+        ):
             result = await ctx.elicit_url(
                 url="https://example.com",
                 message="Test",
@@ -297,7 +326,12 @@ class TestContextElicitUrl:
         )
         ctx._session = mock_session
 
-        with patch.object(type(ctx), "request_id", new_callable=PropertyMock, return_value="test-req-id"):
+        with patch.object(
+            type(ctx),
+            "request_id",
+            new_callable=PropertyMock,
+            return_value="test-req-id",
+        ):
             result = await ctx.elicit_url(
                 url="https://example.com",
                 message="Test",
@@ -316,7 +350,12 @@ class TestContextElicitUrl:
         )
         ctx._session = mock_session
 
-        with patch.object(type(ctx), "request_id", new_callable=PropertyMock, return_value="test-req-id"):
+        with patch.object(
+            type(ctx),
+            "request_id",
+            new_callable=PropertyMock,
+            return_value="test-req-id",
+        ):
             result = await ctx.elicit_url(
                 url="https://example.com",
                 message="Test",
@@ -337,7 +376,12 @@ class TestContextElicitUrl:
         mock_session.elicit_url = AsyncMock(return_value=mock_result)
         ctx._session = mock_session
 
-        with patch.object(type(ctx), "request_id", new_callable=PropertyMock, return_value="test-req-id"):
+        with patch.object(
+            type(ctx),
+            "request_id",
+            new_callable=PropertyMock,
+            return_value="test-req-id",
+        ):
             with pytest.raises(ValueError, match="Unexpected elicitation action"):
                 await ctx.elicit_url(
                     url="https://example.com",

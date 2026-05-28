@@ -1,5 +1,26 @@
 # RFC-URL-Mode-Elicitation Issues
 
+## Wave 3 — Client Callback URL Mode Detection (COMPLETED)
+
+### `create_elicitation_callback()` & `ElicitationHandler` type alias
+- **Status**: ✅ Completed
+- **Files modified**:
+  - `fastmcp_slim/fastmcp/client/elicitation.py`:
+    - Added `Literal` import from `typing`
+    - Added `ElicitRequestURLParams` import from `mcp.types`
+    - Updated `ElicitationHandler` type alias: `type[T] | Literal["url"] | None` (line 31-32)
+    - Updated `create_elicitation_callback()`: branches on `isinstance(params, ElicitRequestURLParams)` first → `response_type = "url"`, then `ElicitRequestFormParams` with existing empty-schema and parsed-type logic (lines 48-53)
+- **Files created**:
+  - `tests/client/test_elicitation_url.py` — 5 TDD tests covering:
+    - `test_url_mode_passes_url_marker`: URL params → handler receives `"url"`
+    - `test_deprecated_empty_schema_form_passes_none`: empty schema form → handler receives `None`
+    - `test_normal_form_mode_passes_parsed_type`: non-empty schema form → handler receives parsed type
+    - `test_handler_receives_url_params`: verifies all positional args for URL mode
+    - `test_handler_receives_form_params`: verifies all positional args for form mode
+- **Test results**: 5 new tests pass, 33 existing `tests/client/test_elicitation.py` tests still pass
+- **Lint/Type**: Ruff clean, ty clean on all modified files
+- **Key fix**: Resolves ambiguity where `response_type = None` was used for both URL mode and deprecated empty-schema form mode. Now URL mode is explicitly marked with `Literal["url"]` so handlers can distinguish.
+
 ## Wave 1 — Foundation (COMPLETED)
 
 ### AcceptedUrlElicitation & UrlElicitationRequiredError
@@ -39,3 +60,33 @@
   - `_elicit_url_for_task()` raises `RuntimeError` when not in background task
 - **Lint/Type**: Ruff clean, ty clean on all modified files
 - **Full server test suite**: 2790 passed, 0 failed
+
+## Wave 5 — Background Task Elicitation with Mode Discriminator (COMPLETED)
+
+### `elicit_url_for_task()`, `elicit_for_task()` mode field, `relay_elicitation()` branching
+- **Status**: ✅ Completed
+- **Files modified**:
+  - `fastmcp_slim/fastmcp/server/tasks/elicitation.py`:
+    - Updated `elicit_for_task()`: added `"mode": "form"` to the `elicit_request` dict stored in Redis (lines ~100-104)
+    - Implemented `elicit_url_for_task()`: mirrors `elicit_for_task()` exactly with URL-mode fields
+      - Stores `{request_id, mode: "url", message, url, elicitation_id}` in Redis
+      - Pushes notification with `_meta.elicitation` containing `mode: "url"`, `url`, `elicitationId`
+      - Uses same BLPOP wait pattern, fail-fast on notification push failure, TTL cleanup
+    - Updated `relay_elicitation()`: branches on `elicitation.get("mode")`
+      - `"url"` → `session.elicit_url(message, url, elicitation_id)`
+      - `"form"` or missing → `session.elicit(message, requestedSchema)` (backward compatible)
+- **Files created**:
+  - `tests/server/tasks/test_task_elicitation_url.py` — 14 TDD tests covering:
+    - `test_stores_mode_form_in_redis`: `elicit_for_task()` stores `"mode": "form"`
+    - `test_stores_mode_url_in_redis`: `elicit_url_for_task()` stores `"mode": "url"` with `url` and `elicitation_id`
+    - `test_notification_includes_url_metadata`: notification `_meta` includes `mode`, `url`, `elicitationId`
+    - `test_raises_when_no_docket` / `test_raises_when_no_task_context`: error cases for `elicit_url_for_task()`
+    - `test_relay_url_mode_calls_elicit_url`: relay branches to `session.elicit_url()`
+    - `test_relay_form_mode_calls_elicit`: relay branches to `session.elicit()`
+    - `test_relay_no_mode_falls_through_to_form_mode`: old Redis keys without `mode` fall through to form mode
+    - `test_relay_url_mode_pushes_cancel_on_error`: relay pushes cancel when `elicit_url()` raises
+    - E2E tests: accept/decline/cancel/no-handler for URL mode through full Client(mcp) pipeline
+    - `test_notification_metadata_includes_url_mode`: notification metadata verification end-to-end
+- **Test results**: 14 new tests pass, 7 existing relay tests still pass, 354 total server/tasks tests pass (0 failures)
+- **Backward compatibility**: Old Redis keys without `"mode"` fall through to form mode; existing form-mode E2E tests unchanged
+- **Key design decision**: Notification uses camelCase `elicitationId` (matching existing `requestId`/`requestedSchema` pattern), but `relay_elicitation()` receives this from the notification dict and passes snake_case `elicitation_id` to `session.elicit_url()` — this is the correct mapping because the SDK method signature uses snake_case.

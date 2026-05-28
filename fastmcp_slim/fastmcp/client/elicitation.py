@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
-from typing import Any, Generic, TypeAlias
+from typing import Any, Generic, Literal, TypeAlias
 
 import mcp.types
 from mcp import ClientSession
 from mcp.client.session import ElicitationFnT
 from mcp.shared.context import LifespanContextT, RequestContext
-from mcp.types import ElicitRequestFormParams, ElicitRequestParams
+from mcp.types import (
+    ElicitRequestFormParams,
+    ElicitRequestParams,
+    ElicitRequestURLParams,
+)
 from mcp.types import ElicitResult as MCPElicitResult
 from pydantic_core import to_jsonable_python
 from typing_extensions import TypeVar
@@ -27,7 +31,8 @@ ElicitationHandler: TypeAlias = Callable[
     [
         str,  # message
         type[T]
-        | None,  # a class for creating a structured response (None for URL elicitation)
+        | Literal["url"]  # "url" marker for URL-based elicitation
+        | None,  # a class for creating a structured response (None for deprecated empty-schema form mode)
         ElicitRequestParams,
         RequestContext[ClientSession, LifespanContextT],
     ],
@@ -43,15 +48,13 @@ def create_elicitation_callback(
         params: ElicitRequestParams,
     ) -> MCPElicitResult | mcp.types.ErrorData:
         try:
-            # requestedSchema only exists on ElicitRequestFormParams, not ElicitRequestURLParams
-            if isinstance(params, ElicitRequestFormParams):
+            if isinstance(params, ElicitRequestURLParams):
+                response_type = "url"
+            elif isinstance(params, ElicitRequestFormParams):
                 if params.requestedSchema == {"type": "object", "properties": {}}:
                     response_type = None
                 else:
                     response_type = json_schema_to_type(params.requestedSchema)
-            else:
-                # URL-based elicitation doesn't have a schema
-                response_type = None
 
             result = await elicitation_handler(
                 params.message, response_type, params, context

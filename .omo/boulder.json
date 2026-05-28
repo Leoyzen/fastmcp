@@ -8,7 +8,7 @@
       "plan_name": "rfc-url-mode-elicitation",
       "status": "active",
       "started_at": "2026-05-28T12:04:29.538Z",
-      "updated_at": "2026-05-28T12:16:29.236Z",
+      "updated_at": "2026-05-28T12:19:21.692Z",
       "session_ids": [
         "ses_19187393cffeoF3ZJN0aE09bCE"
       ],
@@ -37,8 +37,21 @@
           "session_id": "ses_191844177ffeCgEMn93Vap5DRE",
           "agent": "Sisyphus-Junior",
           "category": "unspecified-high",
-          "updated_at": "2026-05-28T12:16:29.236Z",
+          "updated_at": "2026-05-28T12:16:58.122Z",
           "started_at": "2026-05-28T12:16:29.236Z",
+          "status": "completed",
+          "ended_at": "2026-05-28T12:16:58.122Z",
+          "elapsed_ms": 28886
+        },
+        "todo:3": {
+          "task_key": "todo:3",
+          "task_label": "3",
+          "task_title": "**Update client callback for URL mode detection + TDD tests**",
+          "session_id": "ses_1917ba255ffegMm2fBZSzCWpTx",
+          "agent": "Sisyphus-Junior",
+          "category": "unspecified-high",
+          "updated_at": "2026-05-28T12:19:21.692Z",
+          "started_at": "2026-05-28T12:19:21.692Z",
           "status": "running"
         }
       }
@@ -47,7 +60,7 @@
   "active_plan": "/Users/yuchen.liu/src/yilab/iroot-llm/packages/fastmcp/.omo/plans/rfc-url-mode-elicitation.md",
   "started_at": "2026-05-28T12:04:29.538Z",
   "status": "active",
-  "updated_at": "2026-05-28T12:16:29.236Z",
+  "updated_at": "2026-05-28T12:19:21.692Z",
   "session_ids": [
     "ses_19187393cffeoF3ZJN0aE09bCE"
   ],
@@ -76,8 +89,21 @@
       "session_id": "ses_191844177ffeCgEMn93Vap5DRE",
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
-      "updated_at": "2026-05-28T12:16:29.236Z",
+      "updated_at": "2026-05-28T12:16:58.122Z",
       "started_at": "2026-05-28T12:16:29.236Z",
+      "status": "completed",
+      "ended_at": "2026-05-28T12:16:58.122Z",
+      "elapsed_ms": 28886
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "**Update client callback for URL mode detection + TDD tests**",
+      "session_id": "ses_1917ba255ffegMm2fBZSzCWpTx",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-28T12:19:21.692Z",
+      "started_at": "2026-05-28T12:19:21.692Z",
       "status": "running"
     }
   },
