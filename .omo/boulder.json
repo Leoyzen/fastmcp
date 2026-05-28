@@ -1,0 +1,59 @@
+{
+  "schema_version": 2,
+  "active_work_id": "rfc-url-mode-elicitation-c3636e24",
+  "works": {
+    "rfc-url-mode-elicitation-c3636e24": {
+      "work_id": "rfc-url-mode-elicitation-c3636e24",
+      "active_plan": "/Users/yuchen.liu/src/yilab/iroot-llm/packages/fastmcp/.omo/plans/rfc-url-mode-elicitation.md",
+      "plan_name": "rfc-url-mode-elicitation",
+      "status": "active",
+      "started_at": "2026-05-28T12:04:29.538Z",
+      "updated_at": "2026-05-28T12:07:12.020Z",
+      "session_ids": [
+        "ses_19187393cffeoF3ZJN0aE09bCE"
+      ],
+      "session_origins": {
+        "ses_19187393cffeoF3ZJN0aE09bCE": "direct"
+      },
+      "agent": "atlas",
+      "task_sessions": {
+        "todo:1": {
+          "task_key": "todo:1",
+          "task_label": "1",
+          "task_title": "**Add `AcceptedUrlElicitation` type and `UrlElicitationRequiredError` export**",
+          "session_id": "ses_191869dd2ffezzteNTa8gREaRF",
+          "agent": "Sisyphus-Junior",
+          "category": "quick",
+          "updated_at": "2026-05-28T12:07:12.020Z",
+          "started_at": "2026-05-28T12:07:12.020Z",
+          "status": "running"
+        }
+      }
+    }
+  },
+  "active_plan": "/Users/yuchen.liu/src/yilab/iroot-llm/packages/fastmcp/.omo/plans/rfc-url-mode-elicitation.md",
+  "started_at": "2026-05-28T12:04:29.538Z",
+  "status": "active",
+  "updated_at": "2026-05-28T12:07:12.020Z",
+  "session_ids": [
+    "ses_19187393cffeoF3ZJN0aE09bCE"
+  ],
+  "session_origins": {
+    "ses_19187393cffeoF3ZJN0aE09bCE": "direct"
+  },
+  "plan_name": "rfc-url-mode-elicitation",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "**Add `AcceptedUrlElicitation` type and `UrlElicitationRequiredError` export**",
+      "session_id": "ses_191869dd2ffezzteNTa8gREaRF",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-28T12:07:12.020Z",
+      "started_at": "2026-05-28T12:07:12.020Z",
+      "status": "running"
+    }
+  },
+  "agent": "atlas"
+}

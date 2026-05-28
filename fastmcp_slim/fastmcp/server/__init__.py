@@ -12,7 +12,16 @@ except ImportError as exc:
 def __getattr__(name: str) -> object:
     if name == "dependencies":
         return importlib.import_module("fastmcp.server.dependencies")
+    if name in ("AcceptedUrlElicitation", "UrlElicitationRequiredError"):
+        mod = importlib.import_module("fastmcp.server.elicitation")
+        return getattr(mod, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
-__all__ = ["Context", "FastMCP", "create_proxy"]
+__all__ = [
+    "AcceptedUrlElicitation",
+    "Context",
+    "FastMCP",
+    "UrlElicitationRequiredError",
+    "create_proxy",
+]
