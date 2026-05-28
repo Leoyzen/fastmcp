@@ -1,0 +1,8 @@
+Edge Case: Empty state (no handlers registered)
+Tool: Bash (pytest)
+Commands:
+  - tests/server/tasks/test_task_elicitation_relay.py::TestElicitationRelay::test_no_elicitation_handler_returns_cancel
+  - tests/server/tasks/test_task_elicitation_url.py::TestUrlElicitationRelayE2E::test_no_elicitation_handler_returns_cancel_url_mode
+Expected: Both PASS (graceful fallback to cancel)
+Actual: 1 passed, 1 passed
+Result: PASS

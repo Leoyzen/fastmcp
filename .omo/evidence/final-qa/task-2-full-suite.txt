@@ -1,0 +1,6 @@
+Scenario: Full elicit_url flow
+Tool: Bash (pytest)
+Command: uv run pytest tests/server/test_elicitation_url.py -v
+Expected: All tests PASS
+Actual: 27 passed in 1.13s
+Result: PASS

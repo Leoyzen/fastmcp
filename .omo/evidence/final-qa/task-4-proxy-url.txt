@@ -1,0 +1,6 @@
+Scenario: Proxy forwards URL mode correctly
+Tool: Bash (pytest)
+Command: uv run pytest tests/server/providers/proxy/test_proxy_url_elicitation.py -v -k "test_url_forwarding"
+Expected: PASS
+Actual: 2 passed (test_url_mode_calls_session_elicit_url, test_url_mode_returns_decline)
+Result: PASS

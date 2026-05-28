@@ -26,7 +26,6 @@ from fastmcp.server.elicitation import (
     DeclinedElicitation,
 )
 from fastmcp.server.tasks.elicitation import (
-    _elicit_keys,
     elicit_for_task,
     elicit_url_for_task,
     relay_elicitation,
@@ -46,17 +45,13 @@ class TestElicitForTaskStorageFormat:
         mcp._docket = MagicMock()
         mock_redis = AsyncMock()
         mcp._docket.redis = MagicMock()
-        mcp._docket.redis.return_value.__aenter__ = AsyncMock(
-            return_value=mock_redis
-        )
+        mcp._docket.redis.return_value.__aenter__ = AsyncMock(return_value=mock_redis)
         mcp._docket.redis.return_value.__aexit__ = AsyncMock(return_value=False)
         mcp._docket.key = lambda k: k
 
         schema = {"type": "object", "properties": {"name": {"type": "string"}}}
 
-        with patch(
-            "fastmcp.server.tasks.elicitation.get_task_context"
-        ) as mock_get_ctx:
+        with patch("fastmcp.server.tasks.elicitation.get_task_context") as mock_get_ctx:
             mock_ctx = MagicMock()
             mock_ctx.task_scope = "test-scope"
             mock_get_ctx.return_value = mock_ctx
@@ -76,7 +71,7 @@ class TestElicitForTaskStorageFormat:
                         new_callable=AsyncMock,
                         return_value=None,
                     ):
-                        result = await elicit_for_task(
+                        _result = await elicit_for_task(
                             task_id="task-123",
                             session=None,
                             message="Enter name",
@@ -110,15 +105,11 @@ class TestElicitUrlForTaskStorageFormat:
         mcp._docket = MagicMock()
         mock_redis = AsyncMock()
         mcp._docket.redis = MagicMock()
-        mcp._docket.redis.return_value.__aenter__ = AsyncMock(
-            return_value=mock_redis
-        )
+        mcp._docket.redis.return_value.__aenter__ = AsyncMock(return_value=mock_redis)
         mcp._docket.redis.return_value.__aexit__ = AsyncMock(return_value=False)
         mcp._docket.key = lambda k: k
 
-        with patch(
-            "fastmcp.server.tasks.elicitation.get_task_context"
-        ) as mock_get_ctx:
+        with patch("fastmcp.server.tasks.elicitation.get_task_context") as mock_get_ctx:
             mock_ctx = MagicMock()
             mock_ctx.task_scope = "test-scope"
             mock_get_ctx.return_value = mock_ctx
@@ -137,7 +128,7 @@ class TestElicitUrlForTaskStorageFormat:
                         new_callable=AsyncMock,
                         return_value=None,
                     ):
-                        result = await elicit_url_for_task(
+                        _result = await elicit_url_for_task(
                             task_id="task-123",
                             session=None,
                             url="https://example.com/form",
@@ -168,9 +159,7 @@ class TestElicitUrlForTaskStorageFormat:
         mcp._docket = MagicMock()
         mock_redis = AsyncMock()
         mcp._docket.redis = MagicMock()
-        mcp._docket.redis.return_value.__aenter__ = AsyncMock(
-            return_value=mock_redis
-        )
+        mcp._docket.redis.return_value.__aenter__ = AsyncMock(return_value=mock_redis)
         mcp._docket.redis.return_value.__aexit__ = AsyncMock(return_value=False)
         mcp._docket.key = lambda k: k
 
@@ -180,9 +169,7 @@ class TestElicitUrlForTaskStorageFormat:
             nonlocal captured_notification
             captured_notification = notification
 
-        with patch(
-            "fastmcp.server.tasks.elicitation.get_task_context"
-        ) as mock_get_ctx:
+        with patch("fastmcp.server.tasks.elicitation.get_task_context") as mock_get_ctx:
             mock_ctx = MagicMock()
             mock_ctx.task_scope = "test-scope"
             mock_get_ctx.return_value = mock_ctx
@@ -300,9 +287,7 @@ class TestRelayElicitationModeBranching:
 
         mock_redis = MockRedis()
         mcp._docket.redis = MagicMock()
-        mcp._docket.redis.return_value.__aenter__ = AsyncMock(
-            return_value=mock_redis
-        )
+        mcp._docket.redis.return_value.__aenter__ = AsyncMock(return_value=mock_redis)
         mcp._docket.redis.return_value.__aexit__ = AsyncMock(return_value=False)
         mcp._docket.key = lambda k: k
 
@@ -356,9 +341,7 @@ class TestRelayElicitationModeBranching:
 
         mock_redis = MockRedis()
         mcp._docket.redis = MagicMock()
-        mcp._docket.redis.return_value.__aenter__ = AsyncMock(
-            return_value=mock_redis
-        )
+        mcp._docket.redis.return_value.__aenter__ = AsyncMock(return_value=mock_redis)
         mcp._docket.redis.return_value.__aexit__ = AsyncMock(return_value=False)
         mcp._docket.key = lambda k: k
 
@@ -411,9 +394,7 @@ class TestRelayElicitationModeBranching:
 
         mock_redis = MockRedis()
         mcp._docket.redis = MagicMock()
-        mcp._docket.redis.return_value.__aenter__ = AsyncMock(
-            return_value=mock_redis
-        )
+        mcp._docket.redis.return_value.__aenter__ = AsyncMock(return_value=mock_redis)
         mcp._docket.redis.return_value.__aexit__ = AsyncMock(return_value=False)
         mcp._docket.key = lambda k: k
 
@@ -439,9 +420,7 @@ class TestRelayElicitationModeBranching:
             pass
 
         mock_session = MockSession()
-        mock_elicit_url = AsyncMock(
-            side_effect=ConnectionError("Client disconnected")
-        )
+        mock_elicit_url = AsyncMock(side_effect=ConnectionError("Client disconnected"))
         mock_session.elicit_url = mock_elicit_url  # type: ignore
 
         elicitation = {
@@ -456,9 +435,7 @@ class TestRelayElicitationModeBranching:
         # Status must be "waiting" for handle_task_input to accept the response
         mock_redis.get = AsyncMock(return_value=b"waiting")
         mcp._docket.redis = MagicMock()
-        mcp._docket.redis.return_value.__aenter__ = AsyncMock(
-            return_value=mock_redis
-        )
+        mcp._docket.redis.return_value.__aenter__ = AsyncMock(return_value=mock_redis)
         mcp._docket.redis.return_value.__aexit__ = AsyncMock(return_value=False)
         mcp._docket.key = lambda k: k
 
@@ -537,9 +514,7 @@ class TestUrlElicitationRelayE2E:
 
         @mcp.tool(task=True)
         async def cancellable_form(ctx: Context) -> str:
-            result = await ctx.elicit_url(
-                "https://example.com/form", "Fill form?"
-            )
+            result = await ctx.elicit_url("https://example.com/form", "Fill form?")
             if isinstance(result, CancelledElicitation):
                 return "Cancelled"
             return "Not cancelled"
@@ -558,9 +533,7 @@ class TestUrlElicitationRelayE2E:
 
         @mcp.tool(task=True)
         async def needs_url(ctx: Context) -> str:
-            result = await ctx.elicit_url(
-                "https://example.com/form", "Open form?"
-            )
+            result = await ctx.elicit_url("https://example.com/form", "Open form?")
             if isinstance(result, CancelledElicitation):
                 return "Cancelled as expected"
             if isinstance(result, AcceptedUrlElicitation):
@@ -588,9 +561,7 @@ class TestUrlElicitationRelayE2E:
             ) -> None:
                 self.notifications.append(message)
 
-            def for_method(
-                self, method: str
-            ) -> list[mcp_types.ServerNotification]:
+            def for_method(self, method: str) -> list[mcp_types.ServerNotification]:
                 return [
                     notification
                     for notification in self.notifications
@@ -602,9 +573,7 @@ class TestUrlElicitationRelayE2E:
 
         @mcp.tool(task=True)
         async def url_tool(ctx: Context) -> str:
-            result = await ctx.elicit_url(
-                "https://example.com/survey", "Open this URL"
-            )
+            result = await ctx.elicit_url("https://example.com/survey", "Open this URL")
             if isinstance(result, AcceptedUrlElicitation):
                 return "Done"
             return "Not done"
@@ -624,9 +593,7 @@ class TestUrlElicitationRelayE2E:
 
             # Find the input_required notification
             notification: mcp_types.ServerNotification | None = None
-            candidates = notification_handler.for_method(
-                "notifications/tasks/status"
-            )
+            candidates = notification_handler.for_method("notifications/tasks/status")
             for candidate in reversed(candidates):
                 candidate_meta = getattr(candidate.root, "_meta", None)
                 related_task = (

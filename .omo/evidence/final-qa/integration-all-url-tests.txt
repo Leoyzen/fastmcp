@@ -1,0 +1,6 @@
+Integration: All URL-mode test files run together
+Tool: Bash (pytest)
+Command: uv run pytest tests/server/test_elicitation_url.py tests/client/test_elicitation_url.py tests/server/providers/proxy/test_proxy_url_elicitation.py tests/server/tasks/test_task_elicitation_url.py -v
+Expected: 52 tests PASS
+Actual: 52 passed in 1.00s
+Result: PASS

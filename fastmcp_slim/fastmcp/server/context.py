@@ -1224,7 +1224,7 @@ class Context:
         before opening the URL. Clients MUST NOT auto-fetch or auto-open URLs.
 
         Args:
-            url: The HTTPS URL the user should navigate to. Must use HTTP or HTTPS
+            url: The HTTPS URL the user should navigate to. Must use HTTPS
                 scheme. Dangerous schemes (javascript:, data:, file:, etc.) are rejected.
             message: A human-readable message explaining why the user needs to
                 visit the URL.
@@ -1238,7 +1238,7 @@ class Context:
             CancelledElicitation if the user cancels.
 
         Raises:
-            ValueError: If the URL is not a valid HTTP(S) URL or uses a dangerous scheme.
+            ValueError: If the URL is not a valid HTTPS URL or uses a dangerous scheme.
             UrlElicitationRequiredError: If the client does not support URL-mode elicitation.
 
         Example:
@@ -1256,9 +1256,12 @@ class Context:
         """
         # Validate URL with pydantic AnyHttpUrl (accepts http/https, rejects dangerous schemes)
         try:
-            AnyHttpUrl(url)
+            parsed = AnyHttpUrl(url)
         except Exception as e:
             raise ValueError(f"Invalid URL: {e}") from e
+
+        if parsed.scheme != "https":
+            raise ValueError("URL must use HTTPS scheme")
 
         if elicitation_id is None:
             elicitation_id = uuid.uuid4().hex

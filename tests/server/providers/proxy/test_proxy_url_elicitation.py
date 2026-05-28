@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import mcp.types
-import pytest
 from mcp.types import ElicitRequestFormParams, ElicitRequestURLParams
 
 from fastmcp.client.elicitation import ElicitResult
@@ -25,9 +24,7 @@ class TestDefaultProxyElicitationHandlerURLMode:
         mock_ctx.session = mock_session
         mock_ctx.request_id = "proxy-req-123"
 
-        with patch(
-            "fastmcp.server.providers.proxy.get_context", return_value=mock_ctx
-        ):
+        with patch("fastmcp.server.providers.proxy.get_context", return_value=mock_ctx):
             params = ElicitRequestURLParams(
                 message="Authorize at https://example.com",
                 url="https://example.com/oauth",
@@ -59,9 +56,7 @@ class TestDefaultProxyElicitationHandlerURLMode:
         mock_ctx.session = mock_session
         mock_ctx.request_id = "proxy-req-decline"
 
-        with patch(
-            "fastmcp.server.providers.proxy.get_context", return_value=mock_ctx
-        ):
+        with patch("fastmcp.server.providers.proxy.get_context", return_value=mock_ctx):
             params = ElicitRequestURLParams(
                 message="Visit this URL",
                 url="https://example.com",
@@ -93,9 +88,7 @@ class TestDefaultProxyElicitationHandlerFormMode:
         mock_ctx.session = mock_session
         mock_ctx.request_id = "proxy-req-789"
 
-        with patch(
-            "fastmcp.server.providers.proxy.get_context", return_value=mock_ctx
-        ):
+        with patch("fastmcp.server.providers.proxy.get_context", return_value=mock_ctx):
             params = ElicitRequestFormParams(
                 message="What is your name?",
                 requestedSchema={
@@ -134,9 +127,7 @@ class TestDefaultProxyElicitationHandlerFormMode:
         mock_ctx.session = mock_session
         mock_ctx.request_id = "req-id-form-mode"
 
-        with patch(
-            "fastmcp.server.providers.proxy.get_context", return_value=mock_ctx
-        ):
+        with patch("fastmcp.server.providers.proxy.get_context", return_value=mock_ctx):
             params = ElicitRequestFormParams(
                 message="Confirm?",
                 requestedSchema={"type": "object", "properties": {}},
@@ -167,9 +158,7 @@ class TestStatefulProxyClientRestoringHandler:
 
         rc_ref = [MagicMock()]
 
-        with patch(
-            "fastmcp.server.providers.proxy.get_context", return_value=mock_ctx
-        ):
+        with patch("fastmcp.server.providers.proxy.get_context", return_value=mock_ctx):
             with patch(
                 "fastmcp.server.providers.proxy._restore_request_context"
             ) as mock_restore:

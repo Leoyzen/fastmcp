@@ -8,7 +8,7 @@
       "plan_name": "rfc-url-mode-elicitation",
       "status": "active",
       "started_at": "2026-05-28T12:04:29.538Z",
-      "updated_at": "2026-05-28T12:30:50.940Z",
+      "updated_at": "2026-05-28T12:36:57.465Z",
       "session_ids": [
         "ses_19187393cffeoF3ZJN0aE09bCE"
       ],
@@ -63,9 +63,22 @@
           "session_id": "ses_191707d18ffeHZBUKCczuU6SsP",
           "agent": "Sisyphus-Junior",
           "category": "writing",
-          "updated_at": "2026-05-28T12:30:50.940Z",
+          "updated_at": "2026-05-28T12:32:04.881Z",
           "started_at": "2026-05-28T12:30:50.940Z",
-          "status": "running"
+          "status": "completed",
+          "ended_at": "2026-05-28T12:32:04.881Z",
+          "elapsed_ms": 73941
+        },
+        "final-wave:f1": {
+          "task_key": "final-wave:f1",
+          "task_label": "F1",
+          "task_title": "**Plan Compliance Audit** — `oracle`",
+          "session_id": "ses_1916a2945ffeoFIyFjvtG6vB7u",
+          "agent": "Sisyphus-Junior",
+          "category": "quick",
+          "started_at": "2026-05-28T12:33:57.738Z",
+          "status": "running",
+          "updated_at": "2026-05-28T12:36:57.465Z"
         }
       }
     }
@@ -73,7 +86,7 @@
   "active_plan": "/Users/yuchen.liu/src/yilab/iroot-llm/packages/fastmcp/.omo/plans/rfc-url-mode-elicitation.md",
   "started_at": "2026-05-28T12:04:29.538Z",
   "status": "active",
-  "updated_at": "2026-05-28T12:30:50.940Z",
+  "updated_at": "2026-05-28T12:36:57.465Z",
   "session_ids": [
     "ses_19187393cffeoF3ZJN0aE09bCE"
   ],
@@ -128,9 +141,22 @@
       "session_id": "ses_191707d18ffeHZBUKCczuU6SsP",
       "agent": "Sisyphus-Junior",
       "category": "writing",
-      "updated_at": "2026-05-28T12:30:50.940Z",
+      "updated_at": "2026-05-28T12:32:04.881Z",
       "started_at": "2026-05-28T12:30:50.940Z",
-      "status": "running"
+      "status": "completed",
+      "ended_at": "2026-05-28T12:32:04.881Z",
+      "elapsed_ms": 73941
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_1916a2945ffeoFIyFjvtG6vB7u",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "started_at": "2026-05-28T12:33:57.738Z",
+      "status": "running",
+      "updated_at": "2026-05-28T12:36:57.465Z"
     }
   },
   "agent": "atlas"

@@ -1,0 +1,6 @@
+Scenario: Background task URL mode stores correct Redis format
+Tool: Bash (pytest)
+Command: uv run pytest tests/server/tasks/test_task_elicitation_url.py -v -k "test_redis_storage"
+Expected: PASS
+Actual: 1 passed (test_stores_mode_url_in_redis)
+Result: PASS

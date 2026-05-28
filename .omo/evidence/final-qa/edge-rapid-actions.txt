@@ -1,0 +1,6 @@
+Edge Case: Rapid actions (multiple sequential elicitations)
+Tool: Bash (pytest)
+Command: uv run pytest tests/server/tasks/test_task_elicitation_relay.py::TestElicitationRelay::test_multiple_sequential_elicitations -v
+Expected: PASS
+Actual: 1 passed
+Result: PASS

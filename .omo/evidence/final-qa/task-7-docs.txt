@@ -1,0 +1,6 @@
+Scenario: Docs contain URL mode handler example
+Tool: Bash (grep)
+Command: grep -c "url" docs/clients/elicitation.mdx
+Expected: Count >= 3
+Actual: 11
+Result: PASS

@@ -1,0 +1,6 @@
+Scenario: URL validation rejects dangerous schemes
+Tool: Bash (pytest)
+Command: uv run pytest tests/server/test_elicitation_url.py -v -k "test_invalid_scheme"
+Expected: PASS
+Actual: 4 passed (javascript, data, file, missing scheme)
+Result: PASS

@@ -1,0 +1,6 @@
+Scenario: Backward compatibility with form mode
+Tool: Bash (pytest)
+Command: uv run pytest tests/client/test_elicitation.py -v
+Expected: PASS (no regressions)
+Actual: 33 passed in 0.69s
+Result: PASS

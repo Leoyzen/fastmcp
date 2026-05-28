@@ -1,0 +1,6 @@
+Scenario: Relay branches on mode correctly
+Tool: Bash (pytest)
+Command: uv run pytest tests/server/tasks/test_task_elicitation_url.py -v -k "test_relay_branch"
+Expected: PASS
+Actual: 4 passed (url_mode, form_mode, no_mode_falls_through, url_mode_pushes_cancel_on_error)
+Result: PASS

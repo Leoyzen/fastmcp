@@ -109,6 +109,17 @@ class TestContextElicitUrl:
         assert isinstance(result, AcceptedUrlElicitation)
         mock_session.elicit_url.assert_awaited_once()
 
+    async def test_http_url_rejected(self):
+        """http:// URL should raise ValueError - only HTTPS is allowed."""
+        mcp = FastMCP("test")
+        ctx = Context(mcp)
+
+        with pytest.raises(ValueError, match="URL must use HTTPS scheme"):
+            await ctx.elicit_url(
+                url="http://example.com",
+                message="Bad URL",
+            )
+
     async def test_javascript_scheme_rejected(self):
         """javascript: scheme should raise ValueError."""
         mcp = FastMCP("test")

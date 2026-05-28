@@ -1,0 +1,8 @@
+{
+  "scenario": "AcceptedUrlElicitation creation and serialization",
+  "tool": "Bash (python REPL)",
+  "command": "uv run python -c \"from fastmcp.server.elicitation import AcceptedUrlElicitation; e = AcceptedUrlElicitation(); print(e.model_dump())\"",
+  "expected": "Output contains {'action': 'accept'}",
+  "actual": "{'action': 'accept'}",
+  "result": "PASS"
+}
