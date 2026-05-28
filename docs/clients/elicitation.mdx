@@ -16,21 +16,29 @@ Elicitation allows MCP servers to request structured input from users during ope
 ## Handler Template
 
 ```python
+from typing import Literal
 from fastmcp import Client
-from fastmcp.client.elicitation import ElicitResult, ElicitRequestParams, RequestContext
+from fastmcp.client.elicitation import (
+    ElicitResult,
+    ElicitRequestParams,
+    ElicitRequestURLParams,
+    RequestContext,
+)
 
 async def elicitation_handler(
     message: str,
-    response_type: type | None,
+    response_type: type | Literal["url"] | None,
     params: ElicitRequestParams,
-    context: RequestContext
+    context: RequestContext,
 ) -> ElicitResult | object:
     """
     Handle server requests for user input.
 
     Args:
         message: The prompt to display to the user
-        response_type: Python dataclass type for the response (None if no data expected)
+        response_type: Python dataclass type for structured responses,
+            Literal["url"] for URL-mode elicitation, or None for
+            deprecated empty-schema form mode
         params: Original MCP elicitation parameters including raw JSON schema
         context: Request context with metadata
 
@@ -38,14 +46,32 @@ async def elicitation_handler(
         - Data directly (implicitly accepts the elicitation)
         - ElicitResult for explicit control over the action
     """
-    # Present the message and collect input
-    user_input = input(f"{message}: ")
-
-    if not user_input:
+    if response_type == "url":
+        # URL mode - show full URL and obtain explicit consent
+        assert isinstance(params, ElicitRequestURLParams)
+        print(f"Server asks: {message}")
+        print(f"URL: {params.url}")
+        consent = input("Open this URL? (y/n): ")
+        if consent.lower() == "y":
+            return ElicitResult(action="accept")
         return ElicitResult(action="decline")
 
-    # Create response using the provided dataclass type
-    return response_type(value=user_input)
+    elif response_type is None:
+        # Deprecated empty-schema form mode (simple approval)
+        approval = input(f"{message} (y/n): ")
+        if approval.lower() == "y":
+            return ElicitResult(action="accept")
+        return ElicitResult(action="decline")
+
+    else:
+        # Normal form mode with structured response
+        user_input = input(f"{message}: ")
+
+        if not user_input:
+            return ElicitResult(action="decline")
+
+        # Create response using the provided dataclass type
+        return response_type(value=user_input)
 
 client = Client(
     "my_mcp_server.py",
@@ -64,18 +90,65 @@ The handler receives four parameters:
   The prompt message to display to the user
 </ResponseField>
 
-<ResponseField name="response_type" type="type | None">
-  A Python dataclass type that FastMCP created from the server's JSON schema. Use this to construct your response with proper typing. If the server requests an empty object, this will be `None`.
+<ResponseField name="response_type" type="type | Literal['url'] | None">
+  A Python dataclass type that FastMCP created from the server's JSON schema. Use this to construct your response with proper typing. When the server uses URL-mode elicitation, this is `Literal["url"]`. If the server requests an empty object (deprecated empty-schema form mode), this will be `None`.
 </ResponseField>
 
 <ResponseField name="params" type="ElicitRequestParams">
-  The original MCP elicitation parameters, including the raw JSON schema in `params.requestedSchema`
+  The original MCP elicitation parameters. For URL mode, this is an `ElicitRequestURLParams` instance with a `url` field. For form mode, it includes the raw JSON schema in `params.requestedSchema`.
 </ResponseField>
 
 <ResponseField name="context" type="RequestContext">
   Request context containing metadata about the elicitation request
 </ResponseField>
 </Card>
+
+## URL Mode
+
+<VersionBadge version="3.4.0" />
+
+In addition to form-mode elicitation, servers can request URL-mode elicitation when they need the user to visit an external URL for out-of-band interactions such as OAuth authorization or payment confirmation. When this happens, `response_type` is `Literal["url"]` and `params` is an `ElicitRequestURLParams` instance containing the `url` field.
+
+URL mode is distinct from the deprecated empty-schema form mode, which passes `response_type=None`. Empty-schema mode is for simple approvals with no data expected. URL mode is for directing the user to a specific web page.
+
+### URL Mode Security Requirements
+
+<Warning>
+Clients MUST NOT auto-open URLs. Auto-opening violates the MCP spec and creates security risks by allowing servers to direct users to arbitrary destinations without their knowledge.
+
+Clients MUST show the full URL to the user and obtain explicit consent before any action is taken.
+
+Clients MUST NOT auto-fetch or pre-fetch URLs. Pre-fetching can trigger unintended side effects, such as completing a payment or authorizing an OAuth flow before the user has consented.
+</Warning>
+
+Here is a handler that properly handles URL mode:
+
+```python
+from typing import Literal
+from fastmcp.client.elicitation import (
+    ElicitResult,
+    ElicitRequestParams,
+    ElicitRequestURLParams,
+    RequestContext,
+)
+
+async def elicitation_handler(
+    message: str,
+    response_type: type | Literal["url"] | None,
+    params: ElicitRequestParams,
+    context: RequestContext,
+) -> ElicitResult | object:
+    if response_type == "url":
+        assert isinstance(params, ElicitRequestURLParams)
+        print(f"Server asks: {message}")
+        print(f"URL: {params.url}")
+        consent = input("Open this URL? (y/n): ")
+        if consent.lower() == "y":
+            return ElicitResult(action="accept")
+        return ElicitResult(action="decline")
+
+    # ... handle form modes
+```
 
 ## Response Actions
 

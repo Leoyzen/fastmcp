@@ -1,5 +1,22 @@
 # RFC-URL-Mode-Elicitation Issues
 
+## Wave 6 — Client Elicitation Documentation (COMPLETED)
+
+### `docs/clients/elicitation.mdx` URL mode documentation
+- **Status**: ✅ Completed
+- **Changes made**:
+  - Updated Handler Template: added `from typing import Literal` and `ElicitRequestURLParams` import; updated `response_type` signature to `type | Literal["url"] | None`; added three-branch `if/elif/else` showing URL mode, deprecated empty-schema form mode, and normal form mode
+  - Updated How It Works `response_type` description to explain `Literal["url"]` vs `None`
+  - Added new "URL Mode" section with `<VersionBadge version="3.4.0" />`
+  - Explained distinction between URL mode (`response_type == "url"`) and deprecated empty-schema form mode (`response_type is None`)
+  - Added "URL Mode Security Requirements" subsection with `<Warning>` callout documenting:
+    - Clients MUST NOT auto-open URLs
+    - Clients MUST show full URL and obtain explicit consent
+    - Clients MUST NOT auto-fetch or pre-fetch URLs
+  - Added focused URL mode handler example with explicit consent flow
+  - Verified `grep -c "url" docs/clients/elicitation.mdx` returns 11
+- **Lint/Type**: N/A (documentation file)
+
 ## Wave 3 — Client Callback URL Mode Detection (COMPLETED)
 
 ### `create_elicitation_callback()` & `ElicitationHandler` type alias
@@ -60,6 +77,23 @@
   - `_elicit_url_for_task()` raises `RuntimeError` when not in background task
 - **Lint/Type**: Ruff clean, ty clean on all modified files
 - **Full server test suite**: 2790 passed, 0 failed
+
+## Wave 6 — Server Documentation for URL-Mode Elicitation (COMPLETED)
+
+### docs/servers/elicitation.mdx updated
+- **Status**: ✅ Completed
+- **Files modified**:
+  - `docs/servers/elicitation.mdx` — added new H2 section "URL-Mode Elicitation" after "Default Values"
+    - Includes `<VersionBadge version="3.4.0" />` for the new feature
+    - Comparison table: form mode (`ctx.elicit()`) vs URL mode (`ctx.elicit_url()`)
+    - Complete runnable OAuth example with imports (`FastMCP`, `Context`, `AcceptedUrlElicitation`)
+    - Security `<Warning>` callout covering HTTPS-only, no sensitive data in URL, no auto-open
+    - `<Warning>` callout clarifying `AcceptedUrlElicitation` only means consent, not flow completion
+    - `UrlElicitationRequiredError` documented with fallback-to-form-mode example
+    - Optional `elicitation_id` parameter documented with tracking example
+    - `elicit_url` appears 7 times in the document (verified via `grep -c`)
+- **Lint/Type**: Prek checks clean on modified file
+- **Cross-reference**: Client docs at `docs/clients/elicitation.mdx` reviewed for consistency
 
 ## Wave 5 — Background Task Elicitation with Mode Discriminator (COMPLETED)
 

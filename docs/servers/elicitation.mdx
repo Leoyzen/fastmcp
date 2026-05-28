@@ -377,3 +377,112 @@ async def create_task(ctx: Context) -> str:
 ```
 
 Default values are supported for strings, integers, numbers, booleans, and enums.
+
+## URL-Mode Elicitation
+
+<VersionBadge version="3.4.0" />
+
+In addition to form-mode elicitation, which asks the user to fill in structured fields, FastMCP supports URL-mode elicitation. Use this when you need the user to visit an external URL for out-of-band interactions such as OAuth authorization, payment confirmation, or any workflow that happens in a browser.
+
+Form mode is ideal for collecting structured data directly in the conversation. URL mode is designed for workflows that require the user to interact with an external service through a web page. The two modes complement each other, and you should choose based on what the user needs to do.
+
+| When to use | Mode | Method |
+|-------------|------|--------|
+| Collect structured input (names, dates, choices) | Form mode | `ctx.elicit()` |
+| OAuth authorization, payment confirmation, or any external web flow | URL mode | `ctx.elicit_url()` |
+| Simple approval with no data needed | Form mode | `ctx.elicit(response_type=None)` |
+| Direct the user to a secure web page | URL mode | `ctx.elicit_url()` |
+
+### Basic Usage
+
+Call `ctx.elicit_url()` with the URL you want the user to visit and a message explaining why:
+
+```python
+from fastmcp import FastMCP, Context
+from fastmcp.server.elicitation import AcceptedUrlElicitation
+
+mcp = FastMCP("OAuth Server")
+
+@mcp.tool
+async def oauth_login(ctx: Context) -> str:
+    result = await ctx.elicit_url(
+        url="https://github.com/login/oauth/authorize?client_id=...",
+        message="Please authorize FastMCP to access your GitHub account.",
+    )
+    if isinstance(result, AcceptedUrlElicitation):
+        return "Authorization initiated. Complete the flow in your browser."
+    return "Authorization was declined or cancelled."
+```
+
+The result is one of three typed objects:
+
+| Result | Description |
+|--------|-------------|
+| `AcceptedUrlElicitation` | User consented to visiting the URL |
+| `DeclinedElicitation` | User chose not to visit the URL |
+| `CancelledElicitation` | User cancelled the entire operation |
+
+<Warning>
+`AcceptedUrlElicitation` only means the user clicked accept. It does not mean the out-of-band flow is complete. If you are implementing OAuth, the user still needs to finish the authorization in their browser, and your server must handle the callback separately.
+</Warning>
+
+### Security Requirements
+
+<Warning>
+- URLs must use HTTPS. Dangerous schemes such as `javascript:`, `data:`, and `file:` are rejected with a `ValueError`.
+- Do not include sensitive data such as API keys or tokens in the URL. Use query parameters for non-sensitive identifiers only, and complete sensitive exchanges through the out-of-band callback.
+- Clients must show the full URL to the user and obtain explicit consent before opening it. Clients must not auto-fetch or auto-open URLs.
+</Warning>
+
+### Handling Unsupported Clients
+
+If the connected client does not support URL-mode elicitation, `ctx.elicit_url()` raises `UrlElicitationRequiredError`. Catch this to fall back to a form-mode prompt or provide an alternative instruction:
+
+```python
+from fastmcp import FastMCP, Context
+from fastmcp.server.elicitation import (
+    AcceptedUrlElicitation,
+    UrlElicitationRequiredError,
+)
+
+mcp = FastMCP("Payment Server")
+
+@mcp.tool
+async def confirm_payment(ctx: Context) -> str:
+    try:
+        result = await ctx.elicit_url(
+            url="https://payment.example.com/confirm?tx=abc123",
+            message="Please confirm your payment in the secure checkout page.",
+        )
+    except UrlElicitationRequiredError:
+        # Client does not support URL mode; fall back to a form prompt
+        result = await ctx.elicit(
+            message="Your client does not support automatic URL opening. "
+                    "Please visit https://payment.example.com/confirm?tx=abc123 "
+                    "and confirm once done.",
+            response_type=None,
+        )
+
+    if isinstance(result, AcceptedUrlElicitation):
+        return "Payment confirmation initiated."
+    if result.action == "accept":
+        return "Payment confirmed."
+    return "Payment was declined or cancelled."
+```
+
+### Optional Elicitation ID
+
+You can provide a custom `elicitation_id` for tracking and correlating the request with out-of-band callbacks. If you omit it, FastMCP auto-generates a UUID:
+
+```python
+@mcp.tool
+async def tracked_auth(ctx: Context) -> str:
+    result = await ctx.elicit_url(
+        url="https://github.com/login/oauth/authorize?client_id=...&state=xyz",
+        message="Authorize with GitHub",
+        elicitation_id="auth-session-42",
+    )
+    if isinstance(result, AcceptedUrlElicitation):
+        return "Authorization started."
+    return "Authorization cancelled."
+```
