@@ -345,3 +345,22 @@ async def handle_task_input(
         )
 
     return True
+
+
+async def elicit_url_for_task(
+    task_id: str,
+    session: ServerSession | None,
+    url: str,
+    message: str,
+    elicitation_id: str,
+    fastmcp: FastMCP,
+) -> mcp.types.ElicitResult:
+    """Send a URL-mode elicitation request from a background task.
+
+    This is a stub that will be fully implemented in Task 5.
+    For now, it raises RuntimeError to indicate it's not yet available.
+    """
+    raise RuntimeError(
+        "elicit_url_for_task is not yet implemented. "
+        "This will be available in a future update."
+    )

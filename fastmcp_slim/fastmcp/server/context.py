@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import uuid
 import warnings
 import weakref
 from collections.abc import Callable, Generator, Mapping, Sequence
@@ -14,6 +15,7 @@ import mcp.types
 from mcp import LoggingLevel, ServerSession
 from mcp.server.lowlevel.server import request_ctx
 from mcp.shared.context import RequestContext
+from mcp.shared.exceptions import McpError
 from mcp.types import (
     GetPromptResult,
     ModelPreferences,
@@ -22,7 +24,7 @@ from mcp.types import (
 )
 from mcp.types import Prompt as SDKPrompt
 from mcp.types import Resource as SDKResource
-from pydantic.networks import AnyUrl
+from pydantic.networks import AnyHttpUrl, AnyUrl
 from starlette.requests import Request
 from typing_extensions import TypeVar
 from uncalled_for import SharedContext
@@ -32,8 +34,10 @@ from fastmcp.exceptions import FastMCPDeprecationWarning
 from fastmcp.resources.base import ResourceResult
 from fastmcp.server.elicitation import (
     AcceptedElicitation,
+    AcceptedUrlElicitation,
     CancelledElicitation,
     DeclinedElicitation,
+    UrlElicitationRequiredError,
     handle_elicit_accept,
     parse_elicit_response_type,
 )
@@ -1202,6 +1206,101 @@ class Context:
         else:
             raise ValueError(f"Unexpected elicitation action: {result.action}")
 
+    async def elicit_url(
+        self,
+        url: str,
+        message: str,
+        elicitation_id: str | None = None,
+    ) -> AcceptedUrlElicitation | DeclinedElicitation | CancelledElicitation:
+        """
+        Send a URL-mode elicitation request to the client and await the response.
+
+        Use this method when you need the user to visit an external URL for
+        out-of-band interactions such as OAuth authorization, payment confirmation,
+        or sensitive data entry.
+
+        The client must support URL-mode elicitation, or the request will error.
+        Clients MUST show the full URL to the user and obtain explicit consent
+        before opening the URL. Clients MUST NOT auto-fetch or auto-open URLs.
+
+        Args:
+            url: The HTTPS URL the user should navigate to. Must use HTTP or HTTPS
+                scheme. Dangerous schemes (javascript:, data:, file:, etc.) are rejected.
+            message: A human-readable message explaining why the user needs to
+                visit the URL.
+            elicitation_id: A unique identifier for this elicitation request.
+                Auto-generated as a UUID if not provided. Used for tracking and
+                completion notifications.
+
+        Returns:
+            AcceptedUrlElicitation if the user accepts,
+            DeclinedElicitation if the user declines, or
+            CancelledElicitation if the user cancels.
+
+        Raises:
+            ValueError: If the URL is not a valid HTTP(S) URL or uses a dangerous scheme.
+            UrlElicitationRequiredError: If the client does not support URL-mode elicitation.
+
+        Example:
+            ```python
+            @mcp.tool
+            async def github_auth(ctx: Context) -> str:
+                result = await ctx.elicit_url(
+                    url="https://github.com/login/oauth/authorize?client_id=...",
+                    message="Please authorize FastMCP to access your GitHub repositories.",
+                )
+                if isinstance(result, AcceptedUrlElicitation):
+                    return "Authorization initiated. Please complete the flow in your browser."
+                return "Authorization was declined or cancelled."
+            ```
+        """
+        # Validate URL with pydantic AnyHttpUrl (accepts http/https, rejects dangerous schemes)
+        try:
+            AnyHttpUrl(url)
+        except Exception as e:
+            raise ValueError(f"Invalid URL: {e}") from e
+
+        if elicitation_id is None:
+            elicitation_id = uuid.uuid4().hex
+
+        try:
+            if self.is_background_task:
+                # Background task mode: use task-aware elicitation
+                result = await self._elicit_url_for_task(
+                    message=message,
+                    url=url,
+                    elicitation_id=elicitation_id,
+                )
+            else:
+                # Standard request mode: use session.elicit_url directly
+                result = await self.session.elicit_url(
+                    message=message,
+                    url=url,
+                    elicitation_id=elicitation_id,
+                    related_request_id=self.request_id,
+                )
+        except McpError as e:
+            if e.error.code == -32602:
+                raise UrlElicitationRequiredError(
+                    [
+                        mcp.types.ElicitRequestURLParams(
+                            message=message,
+                            url=url,
+                            elicitationId=elicitation_id,
+                        )
+                    ]
+                ) from e
+            raise
+
+        if result.action == "accept":
+            return AcceptedUrlElicitation()
+        elif result.action == "decline":
+            return DeclinedElicitation()
+        elif result.action == "cancel":
+            return CancelledElicitation()
+        else:
+            raise ValueError(f"Unexpected elicitation action: {result.action}")
+
     async def _elicit_for_task(
         self,
         message: str,
@@ -1239,6 +1338,46 @@ class Context:
             session=self._session,
             message=message,
             schema=schema,
+            fastmcp=self.fastmcp,
+        )
+
+    async def _elicit_url_for_task(
+        self,
+        message: str,
+        url: str,
+        elicitation_id: str,
+    ) -> mcp.types.ElicitResult:
+        """Send a URL-mode elicitation request from a background task (SEP-1686).
+
+        This method handles URL-mode elicitation when running in a Docket worker
+        context, where there's no active MCP request. It mirrors the behavior of
+        _elicit_for_task but for URL-mode elicitation.
+
+        Args:
+            message: The message to display to the user
+            url: The URL the user should navigate to
+            elicitation_id: Unique identifier for this elicitation request
+
+        Returns:
+            ElicitResult with the user's response
+
+        Raises:
+            RuntimeError: If not running in a background task context
+        """
+        if not self.is_background_task:
+            raise RuntimeError(
+                "_elicit_url_for_task called but not in a background task context"
+            )
+
+        # Import here to avoid circular imports and optional dependency issues
+        from fastmcp.server.tasks.elicitation import elicit_url_for_task
+
+        return await elicit_url_for_task(
+            task_id=self._task_id,  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
+            session=self._session,
+            url=url,
+            message=message,
+            elicitation_id=elicitation_id,
             fastmcp=self.fastmcp,
         )
 
