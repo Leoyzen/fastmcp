@@ -48,6 +48,7 @@ def create_elicitation_callback(
         params: ElicitRequestParams,
     ) -> MCPElicitResult | mcp.types.ErrorData:
         try:
+            response_type: type[T] | Literal["url"] | None = None
             if isinstance(params, ElicitRequestURLParams):
                 response_type = "url"
             elif isinstance(params, ElicitRequestFormParams):
