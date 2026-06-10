@@ -1,0 +1,6 @@
+Integration: Full test suite (all 5867 tests)
+Tool: Bash (pytest)
+Command: uv run pytest -n auto --timeout=30
+Expected: All tests pass, no regressions
+Actual: 5867 passed, 6 skipped, 14 xfailed in 46.01s
+Result: PASS

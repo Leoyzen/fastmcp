@@ -1,0 +1,6 @@
+Edge Case: Invalid input (bad URLs)
+Tool: Bash (pytest)
+Command: uv run pytest tests/server/test_elicitation_url.py -v -k "test_missing_scheme or test_javascript or test_data or test_file"
+Expected: All rejections PASS
+Actual: 4 passed (javascript, data, file, missing scheme all rejected)
+Result: PASS

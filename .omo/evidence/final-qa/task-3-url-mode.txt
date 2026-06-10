@@ -1,0 +1,6 @@
+Scenario: URL mode passes "url" marker
+Tool: Bash (pytest)
+Command: uv run pytest tests/client/test_elicitation_url.py -v -k "test_url_mode"
+Expected: PASS
+Actual: 1 passed (test_url_mode_passes_url_marker)
+Result: PASS

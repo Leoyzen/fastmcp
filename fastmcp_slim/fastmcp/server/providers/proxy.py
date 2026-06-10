@@ -25,7 +25,7 @@ from mcp.shared.exceptions import McpError
 from mcp.types import (
     METHOD_NOT_FOUND,
     BlobResourceContents,
-    ElicitRequestFormParams,
+    ElicitRequestURLParams,
     TextResourceContents,
 )
 from pydantic.networks import AnyUrl
@@ -43,6 +43,7 @@ from fastmcp.prompts import Message, Prompt, PromptResult
 from fastmcp.prompts.base import PromptArgument
 from fastmcp.resources import Resource, ResourceTemplate
 from fastmcp.resources.base import ResourceContent, ResourceResult
+from fastmcp.resources.template import expand_uri_template, extract_query_params
 from fastmcp.server.context import Context
 from fastmcp.server.dependencies import get_context
 from fastmcp.server.middleware import CallNext, Middleware, MiddlewareContext
@@ -243,7 +244,7 @@ class ProxyResource(Resource):
         client_factory: ClientFactoryT,
         *,
         _cached_content: ResourceResult | None = None,
-        **kwargs,
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         self._client_factory = client_factory
@@ -395,9 +396,15 @@ class ProxyTemplate(ResourceTemplate):
         # uri_template on the remote server.
         # quote params to ensure they are valid for the uri_template
         backend_template = self._backend_uri_template or self.uri_template
-        parameterized_uri = backend_template.format(
-            **{k: quote(v, safe="") for k, v in params.items()}
-        )
+        # Normalize to underscored keys to match how match_uri_template normalizes incoming params
+        query_param_names = {
+            p.replace("-", "_") for p in extract_query_params(backend_template)
+        }
+        quoted_params = {
+            k: (v if k in query_param_names else quote(str(v), safe=""))
+            for k, v in params.items()
+        }
+        parameterized_uri = expand_uri_template(backend_template, quoted_params)
         client = await self._get_client()
         async with client:
             result = await client.read_resource(parameterized_uri)
@@ -975,17 +982,19 @@ async def default_proxy_elicitation_handler(
 ) -> ElicitResult:
     """Forward elicitation request from remote server to proxy's connected clients."""
     ctx = get_context()
-    # requestedSchema only exists on ElicitRequestFormParams, not ElicitRequestURLParams
-    requested_schema = (
-        params.requestedSchema
-        if isinstance(params, ElicitRequestFormParams)
-        else {"type": "object", "properties": {}}
-    )
-    result = await ctx.session.elicit(
-        message=message,
-        requestedSchema=requested_schema,
-        related_request_id=ctx.request_id,
-    )
+    if isinstance(params, ElicitRequestURLParams):
+        result = await ctx.session.elicit_url(
+            message=message,
+            url=params.url,
+            elicitation_id=params.elicitationId,
+            related_request_id=ctx.request_id,
+        )
+    else:
+        result = await ctx.session.elicit(
+            message=message,
+            requestedSchema=params.requestedSchema,
+            related_request_id=ctx.request_id,
+        )
     return ElicitResult(action=result.action, content=result.content)
 
 
@@ -1105,7 +1114,7 @@ class ProxyClient(Client[ClientTransportT]):
             kwargs["log_handler"] = default_proxy_log_handler
         if "progress_handler" not in kwargs:
             kwargs["progress_handler"] = default_proxy_progress_handler
-        super().__init__(**kwargs | {"transport": transport})
+        super().__init__(transport=transport, **kwargs)
 
         # Enable forwarding of inbound HTTP headers (e.g. authorization) to
         # the upstream server. This is only appropriate for proxy clients,

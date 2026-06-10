@@ -1,0 +1,163 @@
+{
+  "schema_version": 2,
+  "active_work_id": "rfc-url-mode-elicitation-c3636e24",
+  "works": {
+    "rfc-url-mode-elicitation-c3636e24": {
+      "work_id": "rfc-url-mode-elicitation-c3636e24",
+      "active_plan": "/Users/yuchen.liu/src/yilab/iroot-llm/packages/fastmcp/.omo/plans/rfc-url-mode-elicitation.md",
+      "plan_name": "rfc-url-mode-elicitation",
+      "status": "active",
+      "started_at": "2026-05-28T12:04:29.538Z",
+      "updated_at": "2026-05-28T12:36:57.465Z",
+      "session_ids": [
+        "ses_19187393cffeoF3ZJN0aE09bCE"
+      ],
+      "session_origins": {
+        "ses_19187393cffeoF3ZJN0aE09bCE": "direct"
+      },
+      "agent": "atlas",
+      "task_sessions": {
+        "todo:1": {
+          "task_key": "todo:1",
+          "task_label": "1",
+          "task_title": "**Add `AcceptedUrlElicitation` type and `UrlElicitationRequiredError` export**",
+          "session_id": "ses_191869dd2ffezzteNTa8gREaRF",
+          "agent": "Sisyphus-Junior",
+          "category": "quick",
+          "updated_at": "2026-05-28T12:07:30.791Z",
+          "started_at": "2026-05-28T12:07:12.020Z",
+          "status": "completed",
+          "ended_at": "2026-05-28T12:07:30.790Z",
+          "elapsed_ms": 18770
+        },
+        "todo:2": {
+          "task_key": "todo:2",
+          "task_label": "2",
+          "task_title": "**Implement `Context.elicit_url()` with TDD tests**",
+          "session_id": "ses_191844177ffeCgEMn93Vap5DRE",
+          "agent": "Sisyphus-Junior",
+          "category": "unspecified-high",
+          "updated_at": "2026-05-28T12:16:58.122Z",
+          "started_at": "2026-05-28T12:16:29.236Z",
+          "status": "completed",
+          "ended_at": "2026-05-28T12:16:58.122Z",
+          "elapsed_ms": 28886
+        },
+        "todo:3": {
+          "task_key": "todo:3",
+          "task_label": "3",
+          "task_title": "**Update client callback for URL mode detection + TDD tests**",
+          "session_id": "ses_1917ba255ffegMm2fBZSzCWpTx",
+          "agent": "Sisyphus-Junior",
+          "category": "unspecified-high",
+          "updated_at": "2026-05-28T12:29:03.845Z",
+          "started_at": "2026-05-28T12:19:21.692Z",
+          "status": "completed",
+          "ended_at": "2026-05-28T12:29:03.844Z",
+          "elapsed_ms": 582152
+        },
+        "todo:6": {
+          "task_key": "todo:6",
+          "task_label": "6",
+          "task_title": "**Update server elicitation documentation**",
+          "session_id": "ses_191707d18ffeHZBUKCczuU6SsP",
+          "agent": "Sisyphus-Junior",
+          "category": "writing",
+          "updated_at": "2026-05-28T12:32:04.881Z",
+          "started_at": "2026-05-28T12:30:50.940Z",
+          "status": "completed",
+          "ended_at": "2026-05-28T12:32:04.881Z",
+          "elapsed_ms": 73941
+        },
+        "final-wave:f1": {
+          "task_key": "final-wave:f1",
+          "task_label": "F1",
+          "task_title": "**Plan Compliance Audit** — `oracle`",
+          "session_id": "ses_1916a2945ffeoFIyFjvtG6vB7u",
+          "agent": "Sisyphus-Junior",
+          "category": "quick",
+          "started_at": "2026-05-28T12:33:57.738Z",
+          "status": "running",
+          "updated_at": "2026-05-28T12:36:57.465Z"
+        }
+      }
+    }
+  },
+  "active_plan": "/Users/yuchen.liu/src/yilab/iroot-llm/packages/fastmcp/.omo/plans/rfc-url-mode-elicitation.md",
+  "started_at": "2026-05-28T12:04:29.538Z",
+  "status": "active",
+  "updated_at": "2026-05-28T12:36:57.465Z",
+  "session_ids": [
+    "ses_19187393cffeoF3ZJN0aE09bCE"
+  ],
+  "session_origins": {
+    "ses_19187393cffeoF3ZJN0aE09bCE": "direct"
+  },
+  "plan_name": "rfc-url-mode-elicitation",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "**Add `AcceptedUrlElicitation` type and `UrlElicitationRequiredError` export**",
+      "session_id": "ses_191869dd2ffezzteNTa8gREaRF",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-28T12:07:30.791Z",
+      "started_at": "2026-05-28T12:07:12.020Z",
+      "status": "completed",
+      "ended_at": "2026-05-28T12:07:30.790Z",
+      "elapsed_ms": 18770
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "**Implement `Context.elicit_url()` with TDD tests**",
+      "session_id": "ses_191844177ffeCgEMn93Vap5DRE",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-28T12:16:58.122Z",
+      "started_at": "2026-05-28T12:16:29.236Z",
+      "status": "completed",
+      "ended_at": "2026-05-28T12:16:58.122Z",
+      "elapsed_ms": 28886
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "**Update client callback for URL mode detection + TDD tests**",
+      "session_id": "ses_1917ba255ffegMm2fBZSzCWpTx",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-28T12:29:03.845Z",
+      "started_at": "2026-05-28T12:19:21.692Z",
+      "status": "completed",
+      "ended_at": "2026-05-28T12:29:03.844Z",
+      "elapsed_ms": 582152
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "**Update server elicitation documentation**",
+      "session_id": "ses_191707d18ffeHZBUKCczuU6SsP",
+      "agent": "Sisyphus-Junior",
+      "category": "writing",
+      "updated_at": "2026-05-28T12:32:04.881Z",
+      "started_at": "2026-05-28T12:30:50.940Z",
+      "status": "completed",
+      "ended_at": "2026-05-28T12:32:04.881Z",
+      "elapsed_ms": 73941
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_1916a2945ffeoFIyFjvtG6vB7u",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "started_at": "2026-05-28T12:33:57.738Z",
+      "status": "running",
+      "updated_at": "2026-05-28T12:36:57.465Z"
+    }
+  },
+  "agent": "atlas"
+}

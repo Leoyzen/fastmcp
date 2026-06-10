@@ -99,6 +99,7 @@ async def elicit_for_task(
 
     elicit_request = {
         "request_id": request_id,
+        "mode": "form",
         "message": message,
         "schema": schema,
     }
@@ -255,10 +256,17 @@ async def relay_elicitation(
         fastmcp: FastMCP server instance
     """
     try:
-        result = await session.elicit(
-            message=elicitation["message"],
-            requestedSchema=elicitation["requestedSchema"],
-        )
+        if elicitation.get("mode") == "url":
+            result = await session.elicit_url(
+                message=elicitation["message"],
+                url=elicitation["url"],
+                elicitation_id=elicitation["elicitationId"],
+            )
+        else:
+            result = await session.elicit(
+                message=elicitation["message"],
+                requestedSchema=elicitation["requestedSchema"],
+            )
         await handle_task_input(
             task_id=task_id,
             task_scope=task_scope,
@@ -345,3 +353,186 @@ async def handle_task_input(
         )
 
     return True
+
+
+async def elicit_url_for_task(
+    task_id: str,
+    session: ServerSession | None,
+    url: str,
+    message: str,
+    elicitation_id: str,
+    fastmcp: FastMCP,
+) -> mcp.types.ElicitResult:
+    """Send a URL-mode elicitation request from a background task.
+
+    This function handles the complexity of eliciting user input via URL
+    when running in a Docket worker context where there's no active MCP request.
+
+    Args:
+        task_id: The background task ID
+        session: The MCP ServerSession for this task
+        url: The URL the user should navigate to
+        message: The message to display to the user
+        elicitation_id: Unique identifier for this elicitation request
+        fastmcp: The FastMCP server instance
+
+    Returns:
+        ElicitResult containing the user's response
+
+    Raises:
+        RuntimeError: If Docket is not available
+        McpError: If the elicitation request fails
+    """
+    docket = fastmcp._docket
+    if docket is None:
+        raise RuntimeError(
+            "Background task elicitation requires Docket. "
+            "Ensure 'fastmcp[tasks]' is installed and the server has task-enabled components."
+        )
+
+    # Generate a unique request ID for this elicitation
+    request_id = str(uuid.uuid4())
+
+    task_context = get_task_context()
+    if task_context is not None:
+        task_scope = task_context.task_scope
+        # Prefer the live session's cached ID (always available in-process),
+        # fall back to the snapshot for distributed workers.
+        session_id = (
+            getattr(session, "_fastmcp_state_prefix", None) or get_task_session_id()
+        )
+    else:
+        raise RuntimeError(
+            "Cannot determine task scope for elicitation. "
+            "This typically means elicit_url_for_task() was called outside a Docket worker context."
+        )
+
+    # Store elicitation request in Redis
+    request_key, response_key, status_key = _elicit_keys(task_scope, task_id)
+
+    elicit_request = {
+        "request_id": request_id,
+        "mode": "url",
+        "message": message,
+        "url": url,
+        "elicitation_id": elicitation_id,
+    }
+
+    async with docket.redis() as redis:
+        # Store the elicitation request
+        await redis.set(
+            docket.key(request_key),
+            json.dumps(elicit_request),
+            ex=ELICIT_TTL_SECONDS,
+        )
+        # Set status to "waiting"
+        await redis.set(
+            docket.key(status_key),
+            "waiting",
+            ex=ELICIT_TTL_SECONDS,
+        )
+
+    # Send task status update notification with input_required status.
+    timestamp = datetime.now(timezone.utc).isoformat()
+    notification_dict = {
+        "method": "notifications/tasks/status",
+        "params": {
+            "taskId": task_id,
+            "status": "input_required",
+            "statusMessage": message,
+            "createdAt": timestamp,
+            "lastUpdatedAt": timestamp,
+            "ttl": ELICIT_TTL_SECONDS * 1000,
+        },
+        "_meta": {
+            "io.modelcontextprotocol/related-task": {
+                "taskId": task_id,
+                "status": "input_required",
+                "statusMessage": message,
+                "task_scope": task_scope,
+                "elicitation": {
+                    "requestId": request_id,
+                    "mode": "url",
+                    "message": message,
+                    "url": url,
+                    "elicitationId": elicitation_id,
+                },
+            }
+        },
+    }
+
+    if session_id is None:
+        logger.warning(
+            "No session_id available for task %s, cannot deliver elicitation notification",
+            task_id,
+        )
+        return mcp.types.ElicitResult(action="cancel", content=None)
+
+    try:
+        await push_notification(session_id, notification_dict, docket)
+    except Exception as e:
+        # Fail fast: if notification can't be queued, client won't know to respond
+        logger.warning(
+            "Failed to queue input_required notification for task %s, cancelling elicitation: %s",
+            task_id,
+            e,
+        )
+        # Best-effort cleanup
+        try:
+            async with docket.redis() as redis:
+                await redis.delete(
+                    docket.key(request_key),
+                    docket.key(status_key),
+                )
+        except Exception:
+            pass  # Keys will expire via TTL
+        return mcp.types.ElicitResult(action="cancel", content=None)
+
+    # Wait for response using BLPOP (blocking pop)
+    max_wait_seconds = ELICIT_TTL_SECONDS
+
+    try:
+        async with docket.redis() as redis:
+            result = await redis.blpop(
+                [docket.key(response_key)],
+                timeout=max_wait_seconds,
+            )
+
+            if result:
+                _key, response_data = result
+                response = json.loads(response_data)
+
+                # Clean up Redis keys
+                await redis.delete(
+                    docket.key(request_key),
+                    docket.key(status_key),
+                )
+
+                # Convert to ElicitResult
+                return mcp.types.ElicitResult(
+                    action=response.get("action", "accept"),
+                    content=response.get("content"),
+                )
+    except Exception as e:
+        logger.warning(
+            "BLPOP failed for task %s elicitation, falling back to cancel: %s",
+            task_id,
+            e,
+        )
+
+    # Timeout or error - treat as cancellation
+    try:
+        async with docket.redis() as redis:
+            await redis.delete(
+                docket.key(request_key),
+                docket.key(response_key),
+                docket.key(status_key),
+            )
+    except Exception as cleanup_error:
+        logger.debug(
+            "Failed to clean up elicitation keys for task %s (will expire via TTL): %s",
+            task_id,
+            cleanup_error,
+        )
+
+    return mcp.types.ElicitResult(action="cancel", content=None)

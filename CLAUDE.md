@@ -84,8 +84,10 @@ Only cut releases when the maintainer explicitly asks. Tags follow `v<version>` 
 Write the maintainer-approved handwritten notes to a temporary file, then create the release. `--generate-notes` appends the auto-generated changelog after the handwritten content.
 
 ```bash
-gh release create v3.2.0 --target main --title "v3.2.0: Theme Here" --generate-notes --notes-file /tmp/release-notes.md
+gh release create v3.2.0 --target main --title "v3.2.0: Theme Here" --generate-notes --notes-start-tag v3.1.1 --notes-file /tmp/release-notes.md
 ```
+
+**Always pass `--notes-start-tag <last-stable-tag>`.** Without it, `--generate-notes` picks the most recent prior tag as the changelog start point — and if a prerelease exists (e.g. `v3.4.0b1`), it starts from *that*, silently truncating the PR list to only the commits since the beta. Pin it to the last stable release (e.g. `v3.3.1` when cutting `v3.4.0`). Verify after: the compare link at the bottom of the generated notes should read `v<last-stable>...v<new>`.
 
 Most releases target `main`, but maintenance or backport releases may target a different branch (e.g., `release/2.x`). Confirm the target with the maintainer if there's any ambiguity.
 
@@ -106,6 +108,13 @@ gh api -X POST repos/PrefectHQ/fastmcp/releases/generate-notes \
 **Point releases** (3.0, 3.1, 3.2) get narrative prose: open with the theme of the release, then walk through headline features conceptually — what they enable, why they matter, how they fit together. Write it the way a blog post reads, not a changelog. Multiple paragraphs, code examples where they clarify.
 
 **Patch releases** (3.1.1, 3.0.2) get 1-2 sentences explaining what broke and what the fix does. Keep it minimal — the auto-generated changelog has the details.
+
+**Merge the docs changelog PR *before* cutting the release, not after.** The post-publish `update-published-docs` job force-pushes the `published-docs` branch (which gofastmcp.com serves) to the *released commit* — so the changelog entry only reaches the live site if it's already in the commit being tagged. Land the docs PR on `main` first, then cut the release from `main`. If you tag first and merge docs after, this release's changelog won't appear on the live site until the *next* release force-pushes `published-docs` forward. Two hand-maintained files mirror the GitHub release and must get a new entry for every version, newest at the top (these are `.mdx` and are not covered by the prek Prettier hook, which only runs on `yaml`/`json5` — match the existing entries' style by hand):
+
+- `docs/changelog.mdx` is the full mirror. Add an `<Update label="v<version>" description="YYYY-MM-DD">` block with: a bold linked title (`**[v<version>: <pun>](<release-url>)**`), a condensed 1-paragraph intro (one sentence for patches), the full categorized PR list reformatted from the `--generate-notes` output (`* <title> by [@user](https://github.com/user) in [#NNNN](<pull-url>)`), a `## New Contributors` list (plain `@user`, linked PR), and a `**Full Changelog**: [vA...vB](<compare-url>)` line.
+- `docs/updates.mdx` is the skimmable card feed. Add an `<Update label="FastMCP <version>" description="Month DD, YYYY" tags={["Releases"]}>` wrapping a `<Card>` that links to the GitHub release, with a 1-2 sentence summary and (for point releases) a handful of emoji-bulleted highlights.
+
+Because the docs land *before* the tag exists, derive the entry from the maintainer-approved handwritten notes (intro/summary) and the `--generate-notes` API *preview* (the PR-list body — see the generate-notes API call above, which returns the exact changelog without cutting anything). Scripting the link reformatting is reliable for long PR lists. The release-URL, tag, and compare links follow the known pattern (`/releases/tag/v<version>`, `compare/v<last-stable>...v<version>`) and will 404 only during the short window between merging the docs PR and cutting the release minutes later — they resolve before `published-docs` ever deploys, since that happens after the full publish chain. For this reason, create and merge the docs PR *immediately* before cutting the release — treat the two as one tight back-to-back sequence, not independent steps — so the links are valid by the time the release publishes rather than dangling for any longer than necessary. Maintenance/backport releases (e.g. `v2.14.7`) get an entry in the same two files, slotted into the 2.x section.
 
 ### Commit Messages and Agent Attribution
 

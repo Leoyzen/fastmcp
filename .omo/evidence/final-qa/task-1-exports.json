@@ -1,0 +1,8 @@
+{
+  "scenario": "Export from fastmcp.server",
+  "tool": "Bash (python REPL)",
+  "command": "uv run python -c \"from fastmcp.server import UrlElicitationRequiredError, AcceptedUrlElicitation; print('OK')\"",
+  "expected": "Output is OK (no ImportError)",
+  "actual": "OK",
+  "result": "PASS"
+}

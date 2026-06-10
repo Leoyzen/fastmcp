@@ -8,6 +8,7 @@ from mcp.server.elicitation import (
     CancelledElicitation,
     DeclinedElicitation,
 )
+from mcp.shared.exceptions import UrlElicitationRequiredError
 from pydantic import BaseModel
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
 from pydantic_core import core_schema
@@ -19,10 +20,12 @@ from fastmcp.utilities.types import get_cached_typeadapter
 
 __all__ = [
     "AcceptedElicitation",
+    "AcceptedUrlElicitation",
     "CancelledElicitation",
     "DeclinedElicitation",
     "ElicitConfig",
     "ScalarElicitationType",
+    "UrlElicitationRequiredError",
     "get_elicitation_schema",
     "handle_elicit_accept",
     "parse_elicit_response_type",
@@ -107,6 +110,12 @@ class AcceptedElicitation(BaseModel, Generic[T]):
 
     action: Literal["accept"] = "accept"
     data: T
+
+
+class AcceptedUrlElicitation(BaseModel):
+    """Result when user accepts a URL elicitation."""
+
+    action: Literal["accept"] = "accept"
 
 
 @dataclass

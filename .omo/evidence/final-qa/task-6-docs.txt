@@ -1,0 +1,6 @@
+Scenario: Docs contain elicit_url example
+Tool: Bash (grep)
+Command: grep -c "elicit_url" docs/servers/elicitation.mdx
+Expected: Count >= 3
+Actual: 7
+Result: PASS

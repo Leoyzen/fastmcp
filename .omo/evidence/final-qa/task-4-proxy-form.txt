@@ -1,0 +1,6 @@
+Scenario: Proxy still forwards form mode
+Tool: Bash (pytest)
+Command: uv run pytest tests/server/providers/proxy/test_proxy_url_elicitation.py -v -k "test_form_forwarding"
+Expected: PASS
+Actual: 2 passed (test_form_mode_calls_session_elicit, test_form_mode_passes_related_request_id)
+Result: PASS
